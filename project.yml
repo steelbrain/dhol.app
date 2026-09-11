@@ -1,0 +1,129 @@
+name: Dhol
+options:
+  minimumXcodeGenVersion: "2.42"
+  bundleIdPrefix: ai.aneesiqbal
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "14.0"
+  groupSortPosition: top
+
+settings:
+  base:
+    # MLX is Apple-silicon only, so there is nothing to gain from a fat binary.
+    ARCHS: arm64
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 2KG9772KH6
+    SWIFT_VERSION: "5.0"
+    CLANG_ENABLE_CODE_COVERAGE: NO
+
+packages:
+  mlx-audio-swift:
+    url: https://github.com/Blaizzy/mlx-audio-swift.git
+    exactVersion: 0.1.3
+  mlx-swift:
+    url: https://github.com/ml-explore/mlx-swift.git
+    majorVersion: 0.30.6
+  # Already pulled in by mlx-audio-swift; declared explicitly so the app can
+  # read the model cache directly to report download progress.
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface.git
+    majorVersion: 0.10.1
+
+targets:
+  Dhol:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/DholApp
+        excludes:
+          # Generated from the `info` block below.
+          - Resources/Info.plist
+          - Resources/Dhol.entitlements
+          # Rendered to AppIcon.icns by a build phase below.
+          - Resources/AppIcon.svg
+    info:
+      path: Sources/DholApp/Resources/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: en
+        CFBundleDisplayName: Dhol
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleIconFile: AppIcon
+        CFBundleInfoDictionaryVersion: "6.0"
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        # Dhol lives in the menu bar and takes a Dock icon only while the
+        # settings window is open.
+        LSUIElement: true
+        NSHighResolutionCapable: true
+        NSMicrophoneUsageDescription: Dhol uses the microphone while you hold the dictation shortcut.
+        NSPrincipalClass: NSApplication
+    settings:
+      base:
+        PRODUCT_NAME: Dhol
+        # The tests say `@testable import DholApp`, so the module keeps the
+        # source directory's name even though the product is called Dhol.
+        PRODUCT_MODULE_NAME: DholApp
+        PRODUCT_BUNDLE_IDENTIFIER: ai.aneesiqbal.dhol
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Sources/DholApp/Resources/Dhol.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: NO
+        # Dhol types into other apps through the Accessibility API, which a
+        # sandboxed process cannot do.
+        COMBINE_HIDPI_IMAGES: YES
+    dependencies:
+      - package: mlx-swift
+        product: MLX
+      - package: mlx-audio-swift
+        product: MLXAudioSTT
+      - package: swift-huggingface
+        product: HuggingFace
+    postBuildScripts:
+      - name: Render AppIcon.icns
+        shell: /bin/sh
+        script: |
+          set -eu
+          iconset="$DERIVED_FILE_DIR/AppIcon.iconset"
+          rm -rf "$iconset"
+          mkdir -p "$iconset"
+          for size in 16 32 128 256 512; do
+              for scale in 1 2; do
+                  pixels=$((size * scale))
+                  if [ "$scale" -eq 2 ]; then suffix="@2x"; else suffix=""; fi
+                  sips -s format png --resampleHeightWidth "$pixels" "$pixels" \
+                      "$SRCROOT/Sources/DholApp/Resources/AppIcon.svg" \
+                      --out "$iconset/icon_${size}x${size}${suffix}.png" >/dev/null
+              done
+          done
+          iconutil -c icns "$iconset" \
+              -o "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/AppIcon.icns"
+          rm -rf "$iconset"
+        inputFiles:
+          - $(SRCROOT)/Sources/DholApp/Resources/AppIcon.svg
+        outputFiles:
+          - $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/AppIcon.icns
+    scheme:
+      testTargets:
+        - DholCoreTests
+      gatherCoverageData: false
+
+  DholCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/DholCoreTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.aneesiqbal.dhol.tests
+        GENERATE_INFOPLIST_FILE: YES
+        # Hosted by the app so the test bundle can link its module.
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Dhol.app/Contents/MacOS/Dhol
+        BUNDLE_LOADER: $(TEST_HOST)
+    dependencies:
+      - target: Dhol

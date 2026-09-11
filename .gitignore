@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+build/
+Dhol.xcodeproj/
+Sources/DholApp/Resources/Info.plist
+.DS_Store
+*.profraw

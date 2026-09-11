@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="g" x1="140" y1="140" x2="884" y2="884" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFBC52"/><stop offset=".52" stop-color="#F2752F"/><stop offset="1" stop-color="#C43C18"/>
+    </linearGradient>
+    <clipPath id="bc"><path d="M362 300 Q545 283 730 351 L730 673 Q545 741 362 724 Z"/></clipPath>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#g)"/>
+  <ellipse cx="730" cy="512" rx="78" ry="161" fill="#6E1F0E"/>
+  <path d="M362 300 Q545 283 730 351 L730 673 Q545 741 362 724 Z" fill="#FFF6EA"/>
+  <g clip-path="url(#bc)" fill="none" stroke="#E9A266" stroke-width="14" stroke-linecap="round">
+    <line x1="376" y1="272" x2="468" y2="752"/>
+    <line x1="410" y1="272" x2="502" y2="752"/>
+    <line x1="444" y1="272" x2="536" y2="752"/>
+    <line x1="478" y1="272" x2="570" y2="752"/>
+    <line x1="512" y1="272" x2="604" y2="752"/>
+    <line x1="546" y1="272" x2="638" y2="752"/>
+    <line x1="580" y1="272" x2="672" y2="752"/>
+    <line x1="614" y1="272" x2="706" y2="752"/>
+    <line x1="648" y1="272" x2="740" y2="752"/>
+    <line x1="682" y1="272" x2="774" y2="752"/>
+    <line x1="716" y1="272" x2="808" y2="752"/>
+  </g>
+  <ellipse cx="362" cy="512" rx="120" ry="210" fill="#FFF6EA" stroke="#9A2B16" stroke-width="38"/>
+</svg>
